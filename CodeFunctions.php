@@ -67,13 +67,15 @@ function codeFunctions_render($input, $args, $parser, $frame) {
 			: null;
 
 	// Build target line
-	$target = ($target1 && $target2)
-			? ($target1 . ' @ ' . $target2)
-			: ($target1)
-				  ? $target1
-				  : ($target2)
-				      ? $target2
-							: null;
+	if ($target1 != null && $target2 != null) {
+    $target = $target1 . ' @ ' . $target2;
+	} else if ($target1 != null) {
+    $target = $target1;
+	} else if ($target2 != null) {
+		$target = $target2;
+	} else {
+		$target = null;
+	}	
 
 	// Parsing tags in arguments and lines
 	$target = $parser->recursiveTagParse($target, $frame);
