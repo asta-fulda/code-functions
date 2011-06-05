@@ -29,6 +29,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 require_once "geshi.php";
 
 $wgHooks['ParserFirstCallInit'][] = 'codeFunctions_Setup';
+$wgHooks['ParserAfterTidy'][] = 'codeFunctions_Insert';
 
 $wgExtensionCredits['parserhook'][] = array(
 	'version' => '0.0.1',
@@ -37,13 +38,17 @@ $wgExtensionCredits['parserhook'][] = array(
 	'author' => 'Dustin Frisch'
 );
 
+$markers = array();
+
 function codeFunctions_Setup(&$parser) {
-	$parser->setHook('snippet', 'codeFunctions_render');
+	$parser->setHook('snippet', 'codeFunctions_Render');
 
 	return true;
 }
 
-function codeFunctions_render($input, $args, $parser, $frame) {
+function codeFunctions_Render($input, $args, $parser, $frame) {
+  global $markers;
+
 	// Read arguments
   $prefix = (isset($args['prefix']))
       ? $args['prefix']
@@ -82,7 +87,6 @@ function codeFunctions_render($input, $args, $parser, $frame) {
 	$prefix1 = $parser->recursiveTagParse($prefix1, $frame);
 	$prefix2 = $parser->recursiveTagParse($prefix2, $frame);
 	$language = $parser->recursiveTagParse($language, $frame);
-	$input = $parser->recursiveTagParse($input, $frame);
 
   // Strip leading and tailing spaces
 	$input = trim($input);
@@ -186,10 +190,29 @@ function codeFunctions_render($input, $args, $parser, $frame) {
 
 	$result .= '</tr></table>';
 	$result .= '</div>';
+  
+	// Build marker output
+	$output = 'code_functions_marker_' . count($markers) .'_code_functions';
 
-  // Strip line breaks to avoid wiki parsing
-	$result = preg_replace('/[\\n\\r]/', '', $result);
+  // Store result in marker
+	$markers[] = $result;
 
-	return $result;
+	// Output marker
+	return $output;
+}
+
+function codeFunctions_Insert($parser, &$text) {
+  global $markers;
+
+	// Build list of keys
+	$keys = array();
+	for ($i = 0; $i < count($markers); $i++) {
+    $keys[] = 'code_functions_marker_' . $i .'_code_functions';
+	}
+
+	// Replace markers with output
+	$text = str_replace($keys, $markers, $text);
+
+  return true;
 }
 ?>
