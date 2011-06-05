@@ -87,6 +87,8 @@ function codeFunctions_Render($input, $args, $parser, $frame) {
 	$prefix1 = $parser->recursiveTagParse($prefix1, $frame);
 	$prefix2 = $parser->recursiveTagParse($prefix2, $frame);
 	$language = $parser->recursiveTagParse($language, $frame);
+	
+	$input = $parser->replaceVariables($input, $frame);
 
   // Strip leading and tailing spaces
 	$input = trim($input);
